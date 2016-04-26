@@ -20,14 +20,13 @@
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.swing.JViewport;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONArray;
@@ -42,8 +41,8 @@ import org.marc4j.marc.Subfield;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonWriter;
 
 /**
  * Removes local field (tag 9XX).
@@ -53,20 +52,42 @@ import com.google.gson.stream.JsonWriter;
 public class Export
 {
 
-	private static int max = 100000; // 537082;
+	private static int max = 1000000; // 537082;
 
 	public static void main(String args[]) throws Exception
 	{
 
-		InputStream input = new FileInputStream(args[0]);
-
 		String ext = FilenameUtils.getExtension(args[0]);
 		String noext = FilenameUtils.removeExtension(args[0]);
+		InputStream input;
+		Writer output;
+		if(ext.endsWith("gz"))
+		{
+			ext = FilenameUtils.getExtension(noext);
+			noext = FilenameUtils.removeExtension(noext);
+			input = new GZIPInputStream(new FileInputStream(args[0]));
+			output = new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(noext + ".json.gz")), "ISO-8859-1");
+		}
+		else
+		{
+			input = new FileInputStream(args[0]);
+			output = new OutputStreamWriter(new FileOutputStream(noext + ".json"), "ISO-8859-1");
+		}
 
-		Writer output = new OutputStreamWriter(new FileOutputStream(noext + ".json"), "ISO-8859-1");
+// JsonWriter jw = new JsonWriter(new OutputStreamWriter(System.err));
+// jw.setHtmlSafe(true);
+// jw.setIndent("  ");
 
 		MarcReader reader = new MarcStreamReader(input);
 		JSONArray jRecords = new JSONArray();
+		Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+		JsonParser jp = new JsonParser();
+		JsonElement je = null;
+		JsonObject gRecord = new JsonObject();
+		gRecord.addProperty("chiave", "valore");
+		System.out.println(gson.toJson(gRecord));
+		output.write("[\n");
+// jw.beginArray();
 		int count = 0;
 		while(reader.hasNext())
 		{
@@ -75,10 +96,10 @@ public class Export
 			JSONObject jRecord = new JSONObject();
 
 			char status = record.getLeader().toString().charAt(5);
-			System.out.println("stato: " + status);
+// System.out.println("stato: " + status);
 
 			char level = record.getLeader().toString().charAt(7);
-			System.out.println("livello: " + level);
+// System.out.println("livello: " + level);
 			switch(level)
 			{
 				case 'm':
@@ -158,7 +179,10 @@ public class Export
 // bid += "\\" + field.getData().substring(12);
 						bid = field.getData();
 						jRecord.put("codiceIdentificativo", bid);
-						System.out.println("codiceIdentificativo: " + bid);
+// System.out.println("codiceIdentificativo: " + bid);
+// jw.beginObject();
+// jw.name("codiceIdentificativo").value(bid);
+// jw.endObject();
 						break;
 					default:
 						break;
@@ -166,12 +190,12 @@ public class Export
 			}
 // if(!bid.contains("BVE") && (bid.compareToIgnoreCase("IT\\ICCU\\BVE\\0655516")
 // < 0))
-			if(bid.compareToIgnoreCase("IT\\ICCU\\BVE\\0655516") < 0)
+// if(bid.compareToIgnoreCase("IT\\ICCU\\BVE\\0655516") < 0)
 // if(bid.compareToIgnoreCase("IT\\ICCU\\BVE\\0037416") < 0)
-			{
-				continue;
-			}
-			System.out.println(++count);
+// {
+// continue;
+// }
+			System.out.println(++count + "	" + bid);
 			JSONArray jLocs = new JSONArray();
 			JSONArray jNomi = new JSONArray();
 			JSONArray jCDDs = new JSONArray();
@@ -207,7 +231,15 @@ public class Export
 						}
 						else
 						{
-							data = field.getSubfield('z').getData() + " (" + field.getSubfield('b').getData() + ")";
+							if(field.getSubfield('z') != null)
+							{
+								data = field.getSubfield('z').getData();
+								data += " (" + field.getSubfield('b').getData() + ")";
+							}
+							else
+							{
+								System.out.println("011$z mancante");
+							}
 						}
 						jNumero = new JSONObject();
 						jNumero.put("ISSN", data);
@@ -215,7 +247,7 @@ public class Export
 						break;
 					case "100":
 						data = field.getSubfield('a').getData();
-						System.out.println("charset: " + data.substring(26, 29));
+// System.out.println("charset: " + data.substring(26, 29));
 						break;
 					case "101":
 						data = field.getSubfield('a').getData();
@@ -241,7 +273,7 @@ public class Export
 							data += " / " + field.getSubfield('f').getData();
 						}
 						jRecord.put("titolo", data);
-						System.out.println("titolo: " + data);
+// System.out.println("titolo: " + data);
 						break;
 					case "210":
 						data = "";
@@ -415,18 +447,32 @@ public class Export
 				if(jCDDs.size() > 0) jRecord.put("dewey", jCDDs);
 				if(jSoggetti.size() > 0) jRecord.put("soggetti", jSoggetti);
 				if(jVarianti.size() > 0) jRecord.put("altriTitoli", jVarianti);
-				jRecords.add(jRecord);
+// jRecords.add(jRecord);
+				je = jp.parse(jRecord.toString());
+				String prettyJsonString = gson.toJson(je);
+				output.write(prettyJsonString);
+				output.flush();
 			}
-			if(count >= max) break;
+			if(count >= max)
+				break;
+			else
+				output.write(",\n");
 		}
+// jw.endArray();
+// jw.close();
 // output.write(jRecords.toString());
 // jRecords.writeJSONString(output);
-		Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-		JsonParser jp = new JsonParser();
-		JsonElement je = jp.parse(jRecords.toString());
-		String prettyJsonString = gson.toJson(je);
-		output.write(prettyJsonString);
+// Gson gson = new
+// GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+// JsonParser jp = new JsonParser();
+// JsonElement je = jp.parse(jRecords.toString());
+// String prettyJsonString = gson.toJson(je);
+// output.write(prettyJsonString);
 // output.write(jRecords.toString());
+// Properties prop = new Properties();
+// prop.put("nome", "andrea");
+// System.err.println(gson.toJson(prop));
+		output.write("\n]");
 		output.flush();
 		output.close();
 	}
