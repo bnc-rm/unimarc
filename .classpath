@@ -10,5 +10,6 @@
 	<classpathentry kind="lib" path="lib/marc4j-2.6.3.jar"/>
 	<classpathentry kind="lib" path="lib/unimarc.jar"/>
 	<classpathentry kind="lib" path="lib/yamm.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
