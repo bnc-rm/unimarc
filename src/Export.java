@@ -55,8 +55,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 /**
- *  Esporta in un formato JSON dei record UNIMARC. Questi devono essere ISO2709,
- *  con estensione ".mrc.gz"
+ * Esporta in un formato JSON dei record UNIMARC. Questi devono essere ISO2709,
+ * con estensione ".mrc.gz"
  */
 public class Export
 {
@@ -102,6 +102,7 @@ public class Export
 		console.addAppender(ca);
 		WriterAppender wa = null;
 		StopWatch sw = new StopWatch();
+		log.setLevel(Level.INFO);
 		sw.start();
 		for(File file : files)
 		{
@@ -229,7 +230,7 @@ public class Export
 							// bid = field.getData().substring(8, 11);
 							// bid += "\\" + field.getData().substring(12);
 							bid = field.getData();
-							log.debug("BID: " + bid);
+							log.info("BID: " + bid);
 							jRecord.put("codiceIdentificativo", bid);
 							// jw.beginObject();
 							// jw.name("codiceIdentificativo").value(bid);
@@ -498,17 +499,23 @@ public class Export
 					if(jCDDs.size() > 0) jRecord.put("dewey", jCDDs);
 					if(jSoggetti.size() > 0) jRecord.put("soggetti", jSoggetti);
 					if(jVarianti.size() > 0) jRecord.put("altriTitoli", jVarianti);
-					// jRecords.add(jRecord);
 					je = jp.parse(jRecord.toString());
 					String prettyJsonString = gson.toJson(je);
 					output.write(prettyJsonString);
 					output.flush();
 				}
+				else
+				{
+					log.warn("record tipo ZZZ, scartato");
+				}
 // if(count >= max)
 // break;
 // else
 // output.write(",\n");
-				output.write(",\n");
+				if(reader.hasNext())
+				{
+					output.write(",\n");
+				}
 			}
 			output.write("\n]");
 			output.flush();
