@@ -86,6 +86,13 @@ public class Export
 		}
 		return files;
 	}
+	
+	private static String clean(String data)
+	{
+		data = data.replace("\u00c2\u0089", "");
+		data = data.replace("\u00c2\u0088", "");
+		return data;
+	}
 
 	public static void main(String args[]) throws Exception
 	{
