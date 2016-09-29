@@ -86,7 +86,7 @@ public class Export
 		}
 		return files;
 	}
-	
+
 	private static String clean(String data)
 	{
 		data = data.replace("\u00c2\u0089", "");
@@ -320,8 +320,7 @@ public class Export
 							if(field.getSubfield('a') != null)
 							{
 								data = field.getSubfield('a').getData();
-								data = data.replace("\u00c2\u0089", "");
-								data = data.replace("\u00c2\u0088", "");
+								data = clean(data);
 							}
 							else
 							{
@@ -330,6 +329,7 @@ public class Export
 							if(field.getSubfield('e') != null)
 							{
 								data += " : " + field.getSubfield('e').getData();
+								data = clean(data);
 							}
 							if(field.getSubfield('f') != null)
 							{
@@ -343,6 +343,7 @@ public class Export
 							if(field.getSubfield('a') != null)
 							{
 								data = field.getSubfield('a').getData();
+								data = clean(data);
 							}
 							if(field.getSubfield('c') != null)
 							{
@@ -376,16 +377,14 @@ public class Export
 							{
 								data += " ; " + field.getSubfield('v').getData();
 							}
-							data = data.replace("\u00c2\u0089", "");
-							data = data.replace("\u00c2\u0088", "");
+							data = clean(data);
 							jRecord.put("collezione", data);
 							break;
 						case "461":
 							if(field.getSubfield('a') != null)
 							{
 								data = field.getSubfield('a').getData();
-								data = data.replace("\u00c2\u0089", "");
-								data = data.replace("\u00c2\u0088", "");
+								data = clean(data);
 							}
 							else
 							{
@@ -394,6 +393,7 @@ public class Export
 							if(field.getSubfield('e') != null)
 							{
 								data += " : " + field.getSubfield('e').getData();
+								data = clean(data);
 							}
 							if(field.getSubfield('f') != null)
 							{
@@ -405,8 +405,7 @@ public class Export
 							if(field.getSubfield('a') != null)
 							{
 								data = field.getSubfield('a').getData();
-								data = data.replace("\u00c2\u0089", "");
-								data = data.replace("\u00c2\u0088", "");
+								data = clean(data);
 							}
 							else
 							{
