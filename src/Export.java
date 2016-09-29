@@ -320,6 +320,10 @@ public class Export
 							{
 								log.warn(bid + ": privo di titolo");
 							}
+							if(field.getSubfield('e') != null)
+							{
+								data += " : " + field.getSubfield('e').getData();
+							}
 							if(field.getSubfield('f') != null)
 							{
 								data += " / " + field.getSubfield('f').getData();
@@ -379,6 +383,10 @@ public class Export
 							else
 							{
 								log.warn(bid + ": privo di titolo");
+							}
+							if(field.getSubfield('e') != null)
+							{
+								data += " : " + field.getSubfield('e').getData();
 							}
 							if(field.getSubfield('f') != null)
 							{
