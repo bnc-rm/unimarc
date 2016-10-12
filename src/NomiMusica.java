@@ -130,7 +130,8 @@ public class NomiMusica
 							{
 								DataField df = (DataField) dfIter.next();
 								String tag = df.getTag();
-								data = df.getSubfield('a').getData();
+								data = df.getSubfield('3').getData().replace("\\", "").replace("ITICCU","");
+								data += "\t" + df.getSubfield('a').getData();
 								if(df.getSubfield('b') != null)
 								{
 									data += df.getSubfield('b').getData();
