@@ -101,38 +101,54 @@ public class NomiMusica
 		while(dfIter.hasNext())
 		{
 			DataField df = (DataField) dfIter.next();
-// String tag = df.getTag();
-			String data = df.getSubfield('3').getData().replace("\\", "").replace("ITICCU", "");
-			data += "\t" + df.getSubfield('a').getData();
-			if(df.getSubfield('b') != null)
+// String data = df.getSubfield('3').getData().replace("\\",
+// "").replace("ITICCU", "");
+			String data = df.getSubfield('3').toString().replace("\\", "").replace("ITICCU", "");
+			Iterator<Subfield> sfIter = df.getSubfields().iterator();
+			while(sfIter.hasNext())
 			{
-				data += df.getSubfield('b').getData();
-			}
-			if(df.getSubfield('c') != null && df.getSubfield('f') != null)
-			{
-				String c = df.getSubfield('c').getData();
-				String f = df.getSubfield('f').getData();
-				if(f.contains("<"))
+				Subfield sf = sfIter.next();
+				char code = sf.getCode();
+				String sfText = sf.toString();
+				switch(code)
 				{
-					data += "\t" + f + c;
+					case '3':
+						break;
+					case '4':
+						break;
+					case 'a':
+						sfText = sfText.replaceFirst(" : ", " ");
+						data += sfText;
+						break;
+					case 'b':
+						sfText = sfText.replaceFirst(", ", "");
+						sfText = sfText.replaceFirst(" : ", " ");
+						data += sfText;
+						break;
+					case 'c':
+						sfText = sfText.replaceFirst(" <", "");
+						sfText = sfText.replaceFirst(">$", "");
+						sfText = sfText.replaceFirst(" ; ", "");
+						data += sfText;
+						break;
+					case 'd':
+						sfText = sfText.replaceFirst(" <", "");
+						sfText = sfText.replaceFirst(">$", "");
+						sfText = sfText.replaceFirst(" ; ", "");
+						data += sfText;
+						break;
+					case 'f':
+						sfText = sfText.replaceFirst(" <", "");
+						sfText = sfText.replaceFirst(">$", "");
+						sfText = sfText.replaceFirst(" ; ", "");
+						data += sfText;
+						break;
+
+					default:
+						data += sf.toString();
+						break;
 				}
-				else
-				{
-					data += "\t" + c + f;
-				}
 			}
-			else if(df.getSubfield('c') != null)
-			{
-				data += "\t" + df.getSubfield('c').getData();
-			}
-			else if(df.getSubfield('f') != null)
-			{
-				data += "\t" + df.getSubfield('f').getData();
-			}
-// else
-// {
-// log.warn(bid + ": " + tag + "$b nullo");
-// }
 			names.add(clean(data));
 		}
 		return names;
