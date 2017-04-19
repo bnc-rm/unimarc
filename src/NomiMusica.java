@@ -46,18 +46,25 @@ public class NomiMusica
  * insieme, ma ci conviene averli anche separati per le esigenze di pulizia in
  * Indice
  */
-	private static TreeSet<String> aSet = new TreeSet<String>(new Comp());
-	private static TreeSet<String> bSet = new TreeSet<String>(new Comp());
-	private static TreeSet<String> cSet = new TreeSet<String>(new Comp());
-	private static TreeSet<String> dSet = new TreeSet<String>(new Comp());
+	private static TreeSet<String> a70x = new TreeSet<String>(new Comp());
+	private static TreeSet<String> b70x = new TreeSet<String>(new Comp());
+	private static TreeSet<String> c70x = new TreeSet<String>(new Comp());
+	private static TreeSet<String> d70x = new TreeSet<String>(new Comp());
+	private static TreeSet<String> a71x = new TreeSet<String>(new Comp());
+	private static TreeSet<String> b71x = new TreeSet<String>(new Comp());
+	private static TreeSet<String> c71x = new TreeSet<String>(new Comp());
+	private static TreeSet<String> d71x = new TreeSet<String>(new Comp());
 
 /*
  * Pulisce una stringa da caratteri non-sort
  */
 	private static String clean(String data)
 	{
-		data = data.replace("\u00c2\u0089", "");
-		data = data.replace("\u00c2\u0088", "");
+		if(data != null)
+		{
+			data = data.replace("\u00c2\u0089", "");
+			data = data.replace("\u00c2\u0088", "");
+		}
 		return data;
 	}
 
@@ -70,10 +77,10 @@ public class NomiMusica
 		@Override
 		public int compare(String o1, String o2)
 		{
-			if(o1.length() > 10 && o2.length() > 10)
+			if(o1 != null && o2 != null && o1.length() > 14 && o2.length() > 14)
 			{
-				String n1 = o1.substring(10);
-				String n2 = o2.substring(10);
+				String n1 = o1.substring(14);
+				String n2 = o2.substring(14);
 				return(n1.compareTo(n2));
 			}
 /*
@@ -90,20 +97,19 @@ public class NomiMusica
 
 /*
  * Dato un record, ritorna l'insieme dei nomi unici in esso eventualmente
- * contenuti in vari campi dell'area 700.
+ * contenuti in vari campi dell'area 700. I due tipi (persone, enti) vanno
+ * tenuti separati, quindi servono due vettori
  */
-	private static Vector<String> getNames(Record record, String bid)
+	private static Vector<String> get7xx(Iterator<VariableField> dfIter, String bid)
 	{
-		Iterator<VariableField> dfIter;
-		String[] f700 = { "700", "701", "702", "710", "711", "712" };
-		dfIter = ((List<VariableField>) record.getVariableFields(f700)).iterator();
 		Vector<String> names = new Vector<String>();
 		while(dfIter.hasNext())
 		{
+			String data = "";
 			DataField df = (DataField) dfIter.next();
-// String data = df.getSubfield('3').getData().replace("\\",
-// "").replace("ITICCU", "");
-			String data = df.getSubfield('3').toString().replace("\\", "").replace("ITICCU", "");
+			data += df.getIndicator1();
+			data += df.getIndicator2();
+			data += df.getSubfield('3').toString().replace("\\", "").replace("ITICCU", "");
 			Iterator<Subfield> sfIter = df.getSubfields().iterator();
 			while(sfIter.hasNext())
 			{
@@ -149,8 +155,29 @@ public class NomiMusica
 						break;
 				}
 			}
+			if(data != "")
 			names.add(clean(data));
 		}
+			return names;
+	}
+
+	private static Vector<String> get70x(Record record, String bid)
+	{
+		Iterator<VariableField> dfIter;
+		String[] f700 = { "700", "701", "702" };
+		dfIter = ((List<VariableField>) record.getVariableFields(f700)).iterator();
+		Vector<String> names = new Vector<String>();
+		names.addAll(get7xx(dfIter, bid));
+		return names;
+	}
+
+	private static Vector<String> get71x(Record record, String bid)
+	{
+		Iterator<VariableField> dfIter;
+		String[] f700 = { "710", "711", "712" };
+		dfIter = ((List<VariableField>) record.getVariableFields(f700)).iterator();
+		Vector<String> names = new Vector<String>();
+		names.addAll(get7xx(dfIter, bid));
 		return names;
 	}
 
@@ -254,9 +281,15 @@ public class NomiMusica
 						{
 							{
 								if(type == 'a')
-									aSet.addAll(getNames(record, bid));
+								{
+									a70x.addAll(get70x(record, bid));
+									a71x.addAll(get71x(record, bid));
+								}
 								else
-									bSet.addAll(getNames(record, bid));
+								{
+									b70x.addAll(get70x(record, bid));
+									b71x.addAll(get71x(record, bid));
+								}
 							}
 						}
 					}
@@ -273,9 +306,15 @@ public class NomiMusica
 						{
 							{
 								if(type == 'a')
-									aSet.addAll(getNames(record, bid));
+								{
+									a70x.addAll(get70x(record, bid));
+									a71x.addAll(get71x(record, bid));
+								}
 								else
-									bSet.addAll(getNames(record, bid));
+								{
+									b70x.addAll(get70x(record, bid));
+									b71x.addAll(get71x(record, bid));
+								}
 							}
 						}
 					}
@@ -305,7 +344,8 @@ public class NomiMusica
 					{
 						log.debug("[" + data.substring(9, 13) + "] -> " + data1);
 						log.debug("[" + data.substring(13, 17) + "] -> " + data2);
-						cSet.addAll(getNames(record, bid));
+						c70x.addAll(get70x(record, bid));
+						c71x.addAll(get71x(record, bid));
 					}
 				}
 			}
@@ -314,7 +354,8 @@ public class NomiMusica
  */
 			if(type == 'd')
 			{
-				dSet.addAll(getNames(record, bid));
+				d70x.addAll(get70x(record, bid));
+				d71x.addAll(get71x(record, bid));
 			}
 		}
 		try
@@ -366,31 +407,42 @@ public class NomiMusica
 		wa = new WriterAppender(sl, new PrintWriter("nomi.log"));
 		log.addAppender(wa);
 		log.setLevel(Level.INFO);
-		NomiMusica tu = new NomiMusica();
-		File[] files = tu.fileArray(new File(args[0]));
+		NomiMusica nm = new NomiMusica();
+		File[] files = nm.fileArray(new File(args[0]));
 		Arrays.sort(files);
-		TreeSet<String> tree = new TreeSet<String>(new Comp());
+		TreeSet<String> set70x = new TreeSet<String>(new Comp());
+		TreeSet<String> set71x = new TreeSet<String>(new Comp());
 		StopWatch sw = new StopWatch();
 		sw.start();
 		int count = 0;
 		for(File file : files)
 		{
 			console.info("Elaborazione file " + file.getName() + " (" + ++count + "/" + files.length + ")");
-			tu.extract(file);
-			tree.addAll(aSet);
-			tree.addAll(bSet);
-			tree.addAll(cSet);
-			tree.addAll(dSet);
+			nm.extract(file);
+			set70x.addAll(a70x);
+			set70x.addAll(b70x);
+			set70x.addAll(c70x);
+			set70x.addAll(d70x);
+			set71x.addAll(a71x);
+			set71x.addAll(b71x);
+			set71x.addAll(c71x);
+			set71x.addAll(d71x);
 			sw.split();
-			console.info(sw.toSplitString() + " (" + tree.size() + " nomi trovati finora)");
+			console.info(sw.toSplitString() + " (" + set70x.size() + " nomi 70x trovati finora)");
+			console.info(sw.toSplitString() + " (" + set71x.size() + " nomi 71x trovati finora)");
 			sw.unsplit();
 		}
 
-		tu.output(tree, "nomi.csv");
-		tu.output(aSet, "nomi-a.csv");
-		tu.output(bSet, "nomi-b.csv");
-		tu.output(cSet, "nomi-c.csv");
-		tu.output(dSet, "nomi-d.csv");
+		nm.output(set70x, "nomi70x.txt");
+		nm.output(a70x, "nomi70x-a.txt");
+		nm.output(b70x, "nomi70x-b.txt");
+		nm.output(c70x, "nomi70x-c.txt");
+		nm.output(d70x, "nomi70x-d.txt");
+		nm.output(set71x, "nomi71x.txt");
+		nm.output(a71x, "nomi71x-a.txt");
+		nm.output(b71x, "nomi71x-b.txt");
+		nm.output(c71x, "nomi71x-c.txt");
+		nm.output(d71x, "nomi71x-d.txt");
 		console.info("Tempo impiegato: " + sw.toString());
 	}
 }
