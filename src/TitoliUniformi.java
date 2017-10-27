@@ -43,7 +43,6 @@ public class TitoliUniformi
 {
 	public TreeSet<String> extract(File file)
 	{
-		String name = file.getName();
 		InputStream input = null;
 		TreeSet<String> set = new  TreeSet<String>();
 		try
