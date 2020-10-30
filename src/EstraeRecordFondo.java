@@ -51,7 +51,8 @@ public class EstraeRecordFondo
     // RemoveLocalFieldsExample.class.getResourceAsStream(args[0]);
     InputStream input = new FileInputStream(args[0]);
     String owner = args[1];
-    String sep = ";";
+//    String sep = ";";
+    String sep = "\t";
     String permaBase = "http://bve.opac.almavivaitalia.it/opac2/BVE/dettaglio/documento/";
 
     String ext = FilenameUtils.getExtension(args[0]);
@@ -156,6 +157,10 @@ public class EstraeRecordFondo
               String temp = field.getSubfield('a').getData();
               temp = temp.replace("", "");
               temp = temp.replace("", "");
+              if(field.getSubfield('e') != null)
+              {
+                temp += " : " + field.getSubfield('e').getData();
+              }
               csv += temp + sep; // titolo
             }
             else
