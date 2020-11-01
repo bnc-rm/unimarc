@@ -52,7 +52,7 @@ public class EstraeRecordFondo
     InputStream input = new FileInputStream(args[0]);
     String owner = args[1];
 //    String sep = ";";
-    String sep = "\t";
+    String sep = ";";
     String permaBase = "http://bve.opac.almavivaitalia.it/opac2/BVE/dettaglio/documento/";
 
     String ext = FilenameUtils.getExtension(args[0]);
@@ -211,7 +211,7 @@ public class EstraeRecordFondo
           .println("Totale: " + ++totalCount + " (fondi: " + fondsCount + ")");
     }
 
-    System.out.println(csv);
+//    System.out.println(csv);
     table.print(csv);
     table.close();
     writer.close();
